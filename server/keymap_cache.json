@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "device_name": "KeyDeck-Android",
+  "layers": [],
+  "layer_key": "HOLD_K6",
+  "_note": "OPUS SCAFFOLD: スマホから keymap_sync を受信したら上書きされる。サーバ起動時はこのファイルを読み込んで起動直後でもキーを解決可能にする。"
+}

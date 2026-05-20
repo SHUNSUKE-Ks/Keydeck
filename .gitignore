@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+venv/
+.venv/
+
+# Node / Expo
+app/node_modules/
+app/.expo/
+app/dist/
+app/.metro-health-check*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Claude workspace
+.claude/

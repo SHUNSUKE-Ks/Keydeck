@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "macros": {
+    "launch_claude": {
+      "steps": [
+        { "action": "focus_terminal" },
+        { "action": "type", "text": "claude\n" }
+      ]
+    },
+    "git_status": {
+      "steps": [
+        { "action": "focus_terminal" },
+        { "action": "type", "text": "git status\n" }
+      ]
+    },
+    "notion_quick_capture": {
+      "steps": [
+        { "action": "clipboard_read", "var": "body" },
+        {
+          "action": "http_post",
+          "url": "https://api.notion.com/v1/pages",
+          "headers": {
+            "Authorization": "Bearer ${NOTION_TOKEN}",
+            "Notion-Version": "2022-06-28",
+            "Content-Type": "application/json"
+          },
+          "body": {}
+        }
+      ]
+    }
+  }
+}

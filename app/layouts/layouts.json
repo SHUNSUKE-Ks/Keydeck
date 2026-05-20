@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "_note": "OPUS SCAFFOLD: ビジュアルレイアウトはキー機能 (keymap.json) と完全に独立。同じ K1-K6 を別の見た目で配置できる。設定画面でユーザが選択する。",
+  "active": "grid_2x3",
+  "layouts": [
+    {
+      "id": "grid_2x3",
+      "name": "2 × 3 グリッド (デフォルト)",
+      "kind": "grid",
+      "columns": 2,
+      "rows": 3,
+      "gap": 12,
+      "buttons": [
+        { "key": "K1", "row": 0, "col": 0 },
+        { "key": "K2", "row": 0, "col": 1 },
+        { "key": "K3", "row": 1, "col": 0 },
+        { "key": "K4", "row": 1, "col": 1 },
+        { "key": "K5", "row": 2, "col": 0 },
+        { "key": "K6", "row": 2, "col": 1 }
+      ],
+      "style": {
+        "backgroundColor": "#0f1117",
+        "buttonColor": "#1e2230",
+        "buttonActiveColor": "#3b82f6",
+        "textColor": "#e5e7eb",
+        "borderRadius": 16,
+        "fontSize": 18
+      }
+    },
+    {
+      "id": "row_6",
+      "name": "横一列 6 ボタン",
+      "kind": "grid",
+      "columns": 6,
+      "rows": 1,
+      "gap": 8,
+      "buttons": [
+        { "key": "K1", "row": 0, "col": 0 },
+        { "key": "K2", "row": 0, "col": 1 },
+        { "key": "K3", "row": 0, "col": 2 },
+        { "key": "K4", "row": 0, "col": 3 },
+        { "key": "K5", "row": 0, "col": 4 },
+        { "key": "K6", "row": 0, "col": 5 }
+      ],
+      "style": {
+        "backgroundColor": "#000000",
+        "buttonColor": "#222222",
+        "buttonActiveColor": "#22c55e",
+        "textColor": "#ffffff",
+        "borderRadius": 8,
+        "fontSize": 14
+      }
+    },
+    {
+      "id": "freeform_demo",
+      "name": "フリーフォーム (絶対座標)",
+      "kind": "freeform",
+      "buttons": [
+        { "key": "K1", "x": 16,  "y": 16,  "w": 120, "h": 80 },
+        { "key": "K2", "x": 148, "y": 16,  "w": 120, "h": 80 },
+        { "key": "K3", "x": 16,  "y": 108, "w": 252, "h": 80 },
+        { "key": "K4", "x": 16,  "y": 200, "w": 80,  "h": 80 },
+        { "key": "K5", "x": 108, "y": 200, "w": 80,  "h": 80 },
+        { "key": "K6", "x": 200, "y": 200, "w": 80,  "h": 80 }
+      ],
+      "style": {
+        "backgroundColor": "#111827",
+        "buttonColor": "#374151",
+        "buttonActiveColor": "#f59e0b",
+        "textColor": "#f9fafb",
+        "borderRadius": 20,
+        "fontSize": 16
+      }
+    }
+  ]
+}

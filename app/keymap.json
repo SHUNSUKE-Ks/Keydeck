@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "device_name": "KeyDeck-Android",
+  "layers": [
+    {
+      "id": 0,
+      "name": "Base",
+      "keys": {
+        "K1": { "type": "paste", "text": "アリア" },
+        "K2": { "type": "paste", "text": "ゼロス" },
+        "K3": { "type": "paste", "text": "光の巫女" },
+        "K4": { "type": "macro", "id": "launch_claude" },
+        "K5": { "type": "macro", "id": "git_status" },
+        "K6": { "type": "hotkey", "keys": ["ctrl", "shift", "t"] }
+      }
+    },
+    {
+      "id": 1,
+      "name": "Layer-1",
+      "keys": {
+        "K1": { "type": "clipboard" },
+        "K2": { "type": "hotkey", "keys": ["ctrl", "c"] },
+        "K3": { "type": "hotkey", "keys": ["ctrl", "v"] },
+        "K4": { "type": "hotkey", "keys": ["ctrl", "z"] },
+        "K5": { "type": "hotkey", "keys": ["ctrl", "shift", "z"] },
+        "K6": { "type": "layer_switch", "layer": 0 }
+      }
+    }
+  ],
+  "layer_key": "HOLD_K6"
+}

@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "KeyDeck",
+    "slug": "keydeck",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "keydeck",
+    "platforms": ["android"],
+    "plugins": ["expo-router"],
+    "_note": "OPUS SCAFFOLD: アイコン・スプラッシュは Sonnet 実装時に差し替え。"
+  }
+}
