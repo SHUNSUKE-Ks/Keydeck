@@ -17,6 +17,8 @@ import sys
 from pathlib import Path
 
 import websockets
+from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
 from websockets.exceptions import ConnectionClosed
 
 from .macro_engine import KeySenderProtocol, execute_binding, load_macros
@@ -78,12 +80,17 @@ async def main() -> None:
 
     LOG.info("SERVER_01 listening on ws://%s:%d", HOST, PORT)
 
-    async with websockets.serve(handle_connection, HOST, PORT):
-        LOG.info("SERVER_01 server ready -- press Ctrl+C to stop")
-        try:
-            await asyncio.Future()  # run until cancelled (Ctrl+C → CancelledError)
-        except (asyncio.CancelledError, KeyboardInterrupt):
-            LOG.info("SERVER_01 shutdown signal received")
+    observer = start_watchdog()
+    try:
+        async with websockets.serve(handle_connection, HOST, PORT):
+            LOG.info("SERVER_01 server ready -- press Ctrl+C to stop")
+            try:
+                await asyncio.Future()  # run until cancelled (Ctrl+C -> CancelledError)
+            except (asyncio.CancelledError, KeyboardInterrupt):
+                LOG.info("SERVER_01 shutdown signal received")
+    finally:
+        observer.stop()
+        observer.join()
 
     LOG.info("SERVER_01 server stopped")
 
@@ -212,12 +219,49 @@ async def handle_keymap_sync(message) -> None:  # type: ignore[no-untyped-def]
 
 
 # ---------------------------------------------------------------------------
-# Hot-reload (P3)
+# Hot-reload
 # ---------------------------------------------------------------------------
 
-def start_watchdog(on_change) -> None:  # type: ignore[no-untyped-def]
-    """★ P3: macros.json / keymap_cache.json を監視。変更で on_change を呼ぶ。"""
-    raise NotImplementedError("SERVER_07 start_watchdog(): not implemented (P3)")
+def _reload_macros() -> None:
+    global _macros
+    try:
+        _macros = load_macros(str(MACROS_PATH))
+        LOG.info("SERVER_07 macros hot-reloaded: %d entries", len((_macros or {}).get("macros", {})))
+    except Exception as exc:
+        LOG.warning("SERVER_07 macros reload failed: %s", exc)
+
+
+def _reload_keymap_cache() -> None:
+    global _keymap_cache
+    try:
+        raw = KEYMAP_CACHE_PATH.read_text(encoding="utf-8")
+        data = json.loads(raw)
+        if data.get("layers"):
+            _keymap_cache = data
+            LOG.info("SERVER_07 keymap_cache hot-reloaded: %d layers", len(data["layers"]))
+    except Exception as exc:
+        LOG.warning("SERVER_07 keymap_cache reload failed: %s", exc)
+
+
+class _ReloadHandler(FileSystemEventHandler):
+    def on_modified(self, event) -> None:  # type: ignore[no-untyped-def]
+        if event.is_directory:
+            return
+        src = Path(event.src_path).resolve()
+        if src == MACROS_PATH.resolve():
+            _reload_macros()
+        elif src == KEYMAP_CACHE_PATH.resolve():
+            _reload_keymap_cache()
+
+
+def start_watchdog(on_change=None) -> Observer:
+    """macros.json / keymap_cache.json を監視し、変更時に自動リロードする。"""
+    handler = _ReloadHandler()
+    observer = Observer()
+    observer.schedule(handler, str(_BASE), recursive=False)
+    observer.start()
+    LOG.info("SERVER_07 watchdog started: watching %s", _BASE)
+    return observer
 
 
 if __name__ == "__main__":

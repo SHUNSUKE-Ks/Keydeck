@@ -118,12 +118,14 @@ async def execute_step(
 
     elif action == "http_post":
         import httpx
-        url = step["url"]  # type: ignore[index]
+        url = _expand_env(step["url"])  # type: ignore[index]
         headers = {k: _expand_env(v) for k, v in step.get("headers", {}).items()}  # type: ignore[index]
-        body = step.get("body", {})  # type: ignore[index]
+        body = _expand_env_recursive(step.get("body", {}))  # type: ignore[index]
         async with httpx.AsyncClient() as client:
             resp = await client.post(url, headers=headers, json=body)
-            LOG.info("SERVER_13 http_post %s → %d", url, resp.status_code)
+            LOG.info("SERVER_13 http_post %s -> %d", url, resp.status_code)
+            if resp.status_code >= 400:
+                LOG.warning("SERVER_13 http_post error: %s", resp.text[:300])
 
     elif action == "clipboard_read":
         import pyperclip
@@ -172,3 +174,14 @@ def _focus_terminal() -> None:
 def _expand_env(value: str) -> str:
     """${ENV_VAR} 形式の環境変数を展開する。未定義なら元の文字列を残す。"""
     return re.sub(r"\$\{(\w+)\}", lambda m: os.environ.get(m.group(1), m.group(0)), value)
+
+
+def _expand_env_recursive(obj: object) -> object:
+    """dict / list / str を再帰的に走査して ${ENV_VAR} を展開する。"""
+    if isinstance(obj, str):
+        return _expand_env(obj)
+    if isinstance(obj, dict):
+        return {k: _expand_env_recursive(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_expand_env_recursive(v) for v in obj]
+    return obj
