@@ -5,8 +5,8 @@
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRouter } from "expo-router";
-import React, { useCallback, useEffect } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -51,24 +51,27 @@ export default function HomeScreen() {
   const { keymap, activeLayer, setActiveLayer, getBinding } = useKeymap();
   const { activeLayout } = useLayout();
 
-  // 保存済み設定をロードして接続
-  useEffect(() => {
-    console.info("APP_01 HomeScreen mounted");
-    AsyncStorage.multiGet(["keydeck:serverHost", "keydeck:serverPort", "keydeck:autoReconnect"])
-      .then(([[, host], [, port], [, auto]]) => {
-        const settings: ConnectionSettings = {
-          serverHost: host ?? DEFAULT_SETTINGS.serverHost,
-          serverPort: port ? parseInt(port, 10) : DEFAULT_SETTINGS.serverPort,
-          autoReconnect: auto !== "false",
-        };
-        console.info(`APP_01 connecting to ${settings.serverHost}:${settings.serverPort}`);
-        connect(settings);
-      })
-      .catch((err) => {
-        console.warn("APP_01 failed to load settings, using defaults:", err);
-        connect(DEFAULT_SETTINGS);
-      });
-  }, []);
+  // 画面にフォーカスが戻るたびに設定を再読み込みして接続
+  // (設定画面でIPを変更して戻ってきたときにも再接続される)
+  useFocusEffect(
+    useCallback(() => {
+      console.info("APP_01 HomeScreen focused - loading settings");
+      AsyncStorage.multiGet(["keydeck:serverHost", "keydeck:serverPort", "keydeck:autoReconnect"])
+        .then(([[, host], [, port], [, auto]]) => {
+          const settings: ConnectionSettings = {
+            serverHost: host ?? DEFAULT_SETTINGS.serverHost,
+            serverPort: port ? parseInt(port, 10) : DEFAULT_SETTINGS.serverPort,
+            autoReconnect: auto !== "false",
+          };
+          console.info(`APP_01 connecting to ${settings.serverHost}:${settings.serverPort}`);
+          connect(settings);
+        })
+        .catch((err) => {
+          console.warn("APP_01 failed to load settings, using defaults:", err);
+          connect(DEFAULT_SETTINGS);
+        });
+    }, [connect])
+  );
 
   const handleKeyPress = useCallback(
     (key: string, event: KeyEvent) => {
