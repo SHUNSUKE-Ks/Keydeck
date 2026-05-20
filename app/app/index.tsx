@@ -6,7 +6,7 @@
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   StyleSheet,
@@ -47,9 +47,17 @@ function bindingLabel(binding: KeyBinding | undefined): string {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { state, lastError, connect, sendKeyPress } = useWebSocket();
+  const { state, lastError, connect, sendKeyPress, sendKeymapSync } = useWebSocket();
   const { keymap, activeLayer, setActiveLayer, getBinding } = useKeymap();
   const { activeLayout } = useLayout();
+
+  // 接続確立時にキーマップをサーバへ送信
+  useEffect(() => {
+    if (state === "connected" && keymap) {
+      console.info("APP_01 connected - sending keymap_sync");
+      sendKeymapSync(keymap);
+    }
+  }, [state, keymap, sendKeymapSync]);
 
   // 画面にフォーカスが戻るたびに設定を再読み込みして接続
   // (設定画面でIPを変更して戻ってきたときにも再接続される)

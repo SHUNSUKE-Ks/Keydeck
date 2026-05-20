@@ -9,6 +9,7 @@ import type {
   ConnectionSettings,
   ConnectionState,
   KeyEvent,
+  Keymap,
   ServerMessage,
 } from "../types";
 
@@ -18,6 +19,7 @@ export interface UseWebSocketResult {
   connect: (settings: ConnectionSettings) => void;
   disconnect: () => void;
   sendKeyPress: (key: string, layer: number, event: KeyEvent) => void;
+  sendKeymapSync: (keymap: Keymap) => void;
 }
 
 export function useWebSocket(): UseWebSocketResult {
@@ -120,7 +122,17 @@ export function useWebSocket(): UseWebSocketResult {
     []
   );
 
-  return { state, lastError, connect, disconnect, sendKeyPress };
+  const sendKeymapSync = useCallback((keymap: Keymap) => {
+    const ws = wsRef.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+      console.warn("APP_12 sendKeymapSync: not connected");
+      return;
+    }
+    console.info(`APP_12 sendKeymapSync layers=${keymap.layers.length}`);
+    ws.send(JSON.stringify({ type: "keymap_sync", keymap }));
+  }, []);
+
+  return { state, lastError, connect, disconnect, sendKeyPress, sendKeymapSync };
 }
 
 function dispatchServerMessage(msg: ServerMessage): void {
