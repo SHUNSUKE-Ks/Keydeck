@@ -216,16 +216,39 @@ window.TICKETS = {
     // ============================================================
     {
       id: "APP-009",
-      title: "keymap エディタ UI",
+      title: "HomeScreen モード切替 + 編集パネル統合",
       area: "app",
       priority: "P3",
-      status: "todo",
-      files: ["app/app/keymap-editor.tsx", "app/hooks/useKeymap.ts"],
+      status: "done",
+      files: [
+        "app/app/index.tsx",
+        "app/hooks/useKeymap.ts",
+        "app/app/_layout.tsx",       // Stack.Screen "keymap-editor" を削除
+        "app/app/settings.tsx",      // 設定画面の「keymap エディタを開く」リンク削除
+      ],
       depends_on: ["APP-004"],
-      scaffold_anchors: ["APP_03 KeymapEditorScreen"],
+      scaffold_anchors: ["APP_01 HomeScreen"],
+      // 6 ボタン操作画面は残したい (ユーザー指示)。エディタは別画面ではなく
+      // HomeScreen 内で mode 切替により実現する。
+      design: {
+        mode_state: '"operate" | "edit"',
+        operate_behavior: "現状のまま (sendKeyPress でサーバ送信)",
+        edit_behavior: [
+          "タップでローカル state selectedKey を更新",
+          "KeyboardView の下に固定パネルで type/text/keys/id/layer を編集",
+          "「保存」で useKeymap().updateBinding を呼ぶ",
+          "保存後は selectedKey をクリア",
+        ],
+        ui_layout: "ヘッダに [操作 | 編集] segment、本体は KeyboardView (両モード共通) + 編集パネル (edit時のみ表示)",
+        archived: "app/app/keymap-editor.tsx → devstudio/_archive/ または app/_archive/ へ移動",
+      },
       acceptance: [
-        "各キーの type と値をフォームで編集",
-        "保存で keymap.json 書き換え + サーバ同期",
+        "ヘッダの segment で操作 ⇔ 編集 を切り替えられる",
+        "edit モードでキーをタップすると下部パネルにそのキーの編集 UI が出る",
+        "type 切替 (paste / hotkey / macro / clipboard / layer_switch) で必要なフィールドが切り替わる",
+        "保存で keymap.json が更新され、接続中なら keymap_sync がサーバへ送られる",
+        "operate モードに戻ると今まで通り PC へキー送信できる",
+        "別画面の /keymap-editor は導線ごと削除されている",
       ],
     },
     {

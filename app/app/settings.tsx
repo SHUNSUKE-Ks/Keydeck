@@ -136,17 +136,6 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        {/* --- Keymap --- */}
-        <Text style={styles.sectionHeader}>Keymap</Text>
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.btnSecondary}
-            onPress={() => router.push("/keymap-editor")}
-          >
-            <Text style={styles.btnText}>Keymap エディタを開く</Text>
-          </TouchableOpacity>
-        </View>
-
       </ScrollView>
     </SafeAreaView>
   );
