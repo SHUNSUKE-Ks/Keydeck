@@ -115,12 +115,25 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           ))}
 
-          <TouchableOpacity
-            style={[styles.btnSecondary, { marginTop: 8 }]}
-            onPress={() => router.push("/layout-editor")}
-          >
-            <Text style={styles.btnText}>レイアウト編集</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
+            <TouchableOpacity
+              style={[styles.btnSecondary, { flex: 1 }]}
+              onPress={() => router.push("/layout-editor")}
+            >
+              <Text style={styles.btnText}>＋ 新規作成</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.btnSecondary, { flex: 1 }]}
+              onPress={() =>
+                router.push({
+                  pathname: "/layout-editor",
+                  params: { id: activeLayoutId },
+                })
+              }
+            >
+              <Text style={styles.btnText}>✎ 現在を編集</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* --- Keymap --- */}

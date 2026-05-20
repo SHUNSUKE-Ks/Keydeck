@@ -22,16 +22,18 @@ export interface KeyboardViewProps {
   layout: KeyboardLayout;
   getLabel: (key: string) => string;
   onKeyPress: (key: string, event: KeyEvent) => void;
+  onLongPress?: (key: string) => void;
 }
 
 export function KeyboardView({
   layout,
   getLabel,
   onKeyPress,
+  onLongPress,
 }: KeyboardViewProps) {
   if (layout.kind === "grid") {
     return (
-      <GridView layout={layout} getLabel={getLabel} onKeyPress={onKeyPress} />
+      <GridView layout={layout} getLabel={getLabel} onKeyPress={onKeyPress} onLongPress={onLongPress} />
     );
   }
   return (
@@ -39,6 +41,7 @@ export function KeyboardView({
       layout={layout}
       getLabel={getLabel}
       onKeyPress={onKeyPress}
+      onLongPress={onLongPress}
     />
   );
 }
@@ -51,10 +54,12 @@ function GridView({
   layout,
   getLabel,
   onKeyPress,
+  onLongPress,
 }: {
   layout: GridLayout;
   getLabel: (key: string) => string;
   onKeyPress: (key: string, event: KeyEvent) => void;
+  onLongPress?: (key: string) => void;
 }) {
   const [pressedKey, setPressedKey] = useState<string | null>(null);
   const { style } = layout;
@@ -90,6 +95,7 @@ function GridView({
                   setPressedKey(null);
                   onKeyPress(btn.key, "release");
                 }}
+                onLongPress={() => onLongPress?.(btn.key)}
               />
             ))}
         </View>
@@ -106,10 +112,12 @@ function FreeformView({
   layout,
   getLabel,
   onKeyPress,
+  onLongPress,
 }: {
   layout: FreeformLayout;
   getLabel: (key: string) => string;
   onKeyPress: (key: string, event: KeyEvent) => void;
+  onLongPress?: (key: string) => void;
 }) {
   const [pressedKey, setPressedKey] = useState<string | null>(null);
   const { style } = layout;
@@ -143,6 +151,8 @@ function FreeformView({
             setPressedKey(null);
             onKeyPress(btn.key, "release");
           }}
+          onLongPress={() => onLongPress?.(btn.key)}
+          delayLongPress={500}
         >
           <Text
             style={{ color: style.textColor, fontSize: style.fontSize, fontWeight: "600" }}
@@ -167,6 +177,7 @@ function KeyButton({
   flex,
   onPressIn,
   onPressOut,
+  onLongPress,
 }: {
   keyId: string;
   label: string;
@@ -175,6 +186,7 @@ function KeyButton({
   flex: number;
   onPressIn: () => void;
   onPressOut: () => void;
+  onLongPress?: () => void;
 }) {
   return (
     <Pressable
@@ -188,6 +200,8 @@ function KeyButton({
       ]}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
+      onLongPress={onLongPress}
+      delayLongPress={500}
     >
       <Text style={{ color: style.textColor, fontSize: style.fontSize, fontWeight: "600" }}>
         {label}

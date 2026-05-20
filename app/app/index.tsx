@@ -48,7 +48,7 @@ function bindingLabel(binding: KeyBinding | undefined): string {
 export default function HomeScreen() {
   const router = useRouter();
   const { state, lastError, connect, sendKeyPress } = useWebSocket();
-  const { activeLayer, setActiveLayer, getBinding } = useKeymap();
+  const { keymap, activeLayer, setActiveLayer, getBinding } = useKeymap();
   const { activeLayout } = useLayout();
 
   // 保存済み設定をロードして接続
@@ -86,6 +86,22 @@ export default function HomeScreen() {
       sendKeyPress(key, activeLayer, event);
     },
     [getBinding, sendKeyPress, activeLayer, setActiveLayer]
+  );
+
+  const handleLongPress = useCallback(
+    (key: string) => {
+      if (!keymap) return;
+      // layer_key が "HOLD_K6" 形式の場合、K6 長押しでレイヤー 1 へ切替
+      const layerKeyName = keymap.layer_key?.startsWith("HOLD_")
+        ? keymap.layer_key.slice(5)
+        : null;
+      if (key === layerKeyName) {
+        const next = activeLayer === 0 ? 1 : 0;
+        console.info(`APP_01 HOLD_${key} long press → layer ${next}`);
+        setActiveLayer(next);
+      }
+    },
+    [keymap, activeLayer, setActiveLayer]
   );
 
   const getLabelForKey = useCallback(
@@ -134,6 +150,7 @@ export default function HomeScreen() {
           layout={activeLayout}
           getLabel={getLabelForKey}
           onKeyPress={handleKeyPress}
+          onLongPress={handleLongPress}
         />
       ) : (
         <View style={styles.center}>
