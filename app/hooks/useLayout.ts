@@ -1,15 +1,29 @@
 /**
- * useLayout — ビジュアルレイアウト (layouts.json) を管理する hook。
+ * useLayout — ビジュアルレイアウト (layouts.json) を管理する hook + Context。
+ *
+ * BUG-001 修正: hook 内 useState から Context 化。
+ * LayoutProvider をルートレイアウト (_layout.tsx) でラップすることで
+ * 全画面が同一インスタンスを共有し、設定画面での変更が即座に反映される。
  *
  * Console log naming convention: APP_30 番台
  */
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useCallback, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import type { KeyboardLayout, LayoutsFile } from "../types";
 
 const BUNDLED: LayoutsFile = require("../layouts/layouts.json");
 const STORAGE_KEY = "keydeck:activeLayoutId";
+
+// ---------------------------------------------------------------------------
+// Interface (変更なし — 既存の呼び出し元はそのまま動く)
+// ---------------------------------------------------------------------------
 
 export interface UseLayoutResult {
   layouts: KeyboardLayout[];
@@ -22,7 +36,21 @@ export interface UseLayoutResult {
   reload: () => Promise<void>;
 }
 
-export function useLayout(): UseLayoutResult {
+// ---------------------------------------------------------------------------
+// Context
+// ---------------------------------------------------------------------------
+
+const LayoutContext = createContext<UseLayoutResult | null>(null);
+
+// ---------------------------------------------------------------------------
+// Provider — state はここで 1 か所だけ保持する
+// ---------------------------------------------------------------------------
+
+export function LayoutProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.ReactElement {
   const [layouts, setLayouts] = useState<KeyboardLayout[]>(BUNDLED.layouts);
   const [activeLayoutId, setActiveLayoutIdState] = useState<string>(
     BUNDLED.active
@@ -78,7 +106,7 @@ export function useLayout(): UseLayoutResult {
     console.info("APP_30 reload: reloaded from bundle");
   }, []);
 
-  return {
+  const value: UseLayoutResult = {
     layouts,
     activeLayoutId,
     activeLayout,
@@ -88,7 +116,26 @@ export function useLayout(): UseLayoutResult {
     deleteLayout,
     reload,
   };
+
+  // React.createElement を使うことで .ts ファイルのまま JSX なしで Provider を返す
+  return React.createElement(LayoutContext.Provider, { value }, children);
 }
+
+// ---------------------------------------------------------------------------
+// Hook — Context を読むだけ
+// ---------------------------------------------------------------------------
+
+export function useLayout(): UseLayoutResult {
+  const ctx = useContext(LayoutContext);
+  if (!ctx) {
+    throw new Error("APP_30 useLayout must be used within a LayoutProvider");
+  }
+  return ctx;
+}
+
+// ---------------------------------------------------------------------------
+// Utility
+// ---------------------------------------------------------------------------
 
 export function parseLayoutsFile(json: string): LayoutsFile {
   const data = JSON.parse(json) as LayoutsFile;

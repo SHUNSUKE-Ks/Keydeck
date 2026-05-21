@@ -294,5 +294,79 @@ window.TICKETS = {
         "保存で layouts.json に書き戻し",
       ],
     },
+
+    // ============================================================
+    // 追加チケット (実機検証後の発覚バグ + UI 改善)
+    // ============================================================
+    {
+      id: "BUG-001",
+      title: "レイアウト切替が画面間で反映されない (useLayout の state 分散)",
+      area: "app",
+      priority: "P1",
+      status: "done",
+      files: [
+        "app/hooks/useLayout.ts",
+        "app/app/_layout.tsx",
+      ],
+      depends_on: [],
+      // 原因: useLayout が内部 useState を持つため、コンポーネントごとに
+      // 独立した state インスタンスが作られる。設定画面で setActiveLayout
+      // しても HomeScreen のインスタンスには伝わらず、見た目が変わらない。
+      design: {
+        approach: "Context 化",
+        steps: [
+          "useLayout.ts を分割: LayoutProvider (state 保持) + useLayout (useContext)",
+          "_layout.tsx のルートで <LayoutProvider> を Stack の外側にラップ",
+          "既存の index.tsx / settings.tsx / layout-editor.tsx の useLayout() 呼び出しはそのまま動く",
+          "AsyncStorage の読み書きは Provider 内に集約",
+        ],
+      },
+      acceptance: [
+        "設定画面でレイアウトを変更すると HomeScreen に戻った瞬間に見た目が切り替わる",
+        "レイアウトエディタで新規追加した直後に設定画面・HomeScreen の両方に出現",
+        "アプリ再起動後も最後に選んだレイアウトが復元される (AsyncStorage 動作維持)",
+      ],
+    },
+    {
+      id: "APP-011",
+      title: "ヘッダにレイアウト切替バー (簡易アイコン Tab)",
+      area: "app",
+      priority: "P2",
+      status: "done",
+      files: [
+        "app/app/index.tsx",
+        "app/components/LayoutSwitcher.tsx",   // 新規
+      ],
+      depends_on: ["BUG-001"],
+      design: {
+        ui: [
+          "HomeScreen のヘッダ右側 (⚙ の左) に横スクロール可能なレイアウト切替バーを配置",
+          "各レイアウトは 32×40px 程度のミニプレビューアイコン",
+          "ミニプレビューは KeyboardView を縮小描画 (getLabel は () => \"\")。レイアウトの形状がそのままアイコンになる",
+          "アクティブなアイコンは buttonActiveColor の枠でハイライト",
+          "末尾に [+] アイコン → router.push('/layout-editor') で新規作成へ",
+        ],
+        component: {
+          name: "LayoutSwitcher",
+          props: "{ layouts, activeId, onSelect, onAddNew }",
+          notes: "再利用可能な独立コンポーネントとして切り出す",
+        },
+        mini_preview: [
+          "外枠 32×40 / borderRadius 6 / backgroundColor: layout.style.backgroundColor",
+          "内側は layout.kind に応じて簡易ドット表示:",
+          "  grid:     columns × rows の格子状にドット (各セル 4×4)",
+          "  freeform: 各ボタンを x/y/w/h を比率縮小してミニ矩形で描画",
+          "ドット色は layout.style.buttonColor",
+        ],
+      },
+      acceptance: [
+        "ヘッダの切替バーに layouts.json の全レイアウトが並ぶ",
+        "アイコンをタップすると即座にメイン画面のレイアウトが切り替わる",
+        "現在アクティブのアイコンは枠ハイライトで識別できる",
+        "[+] でレイアウトエディタに遷移できる",
+        "レイアウト数が増えても横スクロールで全て表示可能",
+        "設定画面のレイアウト一覧と完全に同期する (BUG-001 の修正が前提)",
+      ],
+    },
   ],
 };

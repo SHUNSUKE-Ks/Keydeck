@@ -24,6 +24,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardView } from "../components/KeyboardView";
+import { LayoutSwitcher } from "../components/LayoutSwitcher";
 import { useKeymap } from "../hooks/useKeymap";
 import { useLayout } from "../hooks/useLayout";
 import { useWebSocket } from "../hooks/useWebSocket";
@@ -59,7 +60,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { state, lastError, connect, sendKeyPress, sendKeymapSync } = useWebSocket();
   const { keymap, activeLayer, setActiveLayer, getBinding, updateBinding, reload } = useKeymap();
-  const { activeLayout } = useLayout();
+  const { activeLayout, layouts, activeLayoutId, setActiveLayout } = useLayout();
 
   // 操作 / 編集 モード
   const [mode, setMode]               = useState<"operate" | "edit">("operate");
@@ -254,6 +255,16 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Layout switcher bar */}
+        <View style={styles.switcherBar}>
+          <LayoutSwitcher
+            layouts={layouts}
+            activeId={activeLayoutId}
+            onSelect={(id) => { setActiveLayout(id); }}
+            onAddNew={() => router.push("/layout-editor")}
+          />
+        </View>
+
         {/* Error banner */}
         {lastError && (
           <View style={styles.errorBanner}>
@@ -429,6 +440,14 @@ const styles = StyleSheet.create({
   segBtnActive: { backgroundColor: "#3b82f6" },
   segText:      { color: "#6b7280", fontSize: 12, fontWeight: "600" },
   segTextActive:{ color: "#fff" },
+
+  // ---- layout switcher ----
+  switcherBar: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#1e2230",
+  },
 
   // ---- error ----
   errorBanner: {
